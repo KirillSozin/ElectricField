@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 import math
 import random
 
-MIN_RADIUS = 0.002
-MIN_Q = 0.01
-ARENA_SIZE = 15.0
-STEP_ARENA = 0.05
+MIN_RADIUS = 0.1
+MIN_Q = 1
+ARENA_SIZE = 20.0
+STEP_ARENA = ARENA_SIZE / 300.0
+
 
 class Point:
     def __init__(self, x, y, q):
@@ -15,57 +17,56 @@ class Point:
         self.q = q
 
 
-def E(point, x, y):
-    Ex = 0
-    Ey = 0
-    for i in point:
-        r = (x - i.x) ** 2 + (y - i.y) ** 2
-        if r > 0:
-            Ex += i.q * (x - i.x) / r
-            Ey += i.q * (y - i.y) / r
-    return Ex, Ey
+def E(points, x, y):
+    Ex = 0.0
+    Ey = 0.0
+    for i in points:
+        r = math.sqrt((x - i.x) ** 2 + (y - i.y) ** 2)
+        Ex += i.q * (x - i.x) / r ** 3
+        Ey += i.q * (y - i.y) / r ** 3
+    E = (Ex ** 2 + Ey ** 2)
+    return E
 
 
-def go_E(point, coordinates):
-    ansX = []
-    ansY = []
-    ansEX = []
-    ansEY = []
-    for (i, j) in coordinates:
-        Ex, Ey = E(point, i, j)
-        ansX.append(i)
-        ansY.append(j)
-        ansEX.append(Ex)
-        ansEY.append(Ey)
-    return ansX, ansY, ansEX, ansEY
-
-def dotes(points):
-    v = []
+def go_E(points):
+    ans = []
     for i in np.arange(-ARENA_SIZE, ARENA_SIZE, STEP_ARENA):
         for j in np.arange(-ARENA_SIZE, ARENA_SIZE, STEP_ARENA):
-            flag = True
-            for k in points:
-                r = (i - k.x) ** 2 + (j - k.y) ** 2
+            ok = True
+            for p in points:
+                r = math.sqrt((i - p.x) ** 2 + (j - p.y) ** 2)
                 if r < MIN_RADIUS:
-                   flag = False
-            if flag:
-                v.append((i, j))
-    return v
+                    ok = False
+            if ok:
+                ans.append([i, j, E(points, i, j)])
+    return ans
+
 
 def plot_points(points):
-    x = [p.x for p in points]
-    y = [p.y for p in points]
 
-    v = dotes(points)
+    print("go_E starting...")
+    p = go_E(points)
 
-    q_x, q_y, q_Ex, q_Ey = go_E(points, v)
+    # sort by E
+    print("sorting...")
+    p.sort(key=lambda x: x[2])
 
-    plt.quiver(q_x, q_y, q_Ex, q_Ey, color='b', scale=1, width=0.001)
+    # add points
+    print("adding points...")
+    color_x = [i[0] for i in p]
+    color_y = [i[1] for i in p]
+    color_z = [i for i in range(len(p))]
+    plt.scatter(color_x, color_y, c=color_z, cmap=cm.Reds, s=1)
 
     plt.xlim(-ARENA_SIZE, ARENA_SIZE)
     plt.ylim(-ARENA_SIZE, ARENA_SIZE)
 
-    plt.plot(x, y, 'ro', markersize=2, color = 'r')
+    print("showing...")
+    for i in points:
+        if i.q > 0:
+            plt.scatter(i.x, i.y, color='black', s=15)
+        else:
+            plt.scatter(i.x, i.y, color='green', s=15)
 
     plt.show()
 
@@ -73,10 +74,10 @@ def plot_points(points):
 def main():
     # random points
     given_points = []
-    for i in range(2):
-        given_points.append(Point(random.randrange(-ARENA_SIZE, ARENA_SIZE), random.randrange(-ARENA_SIZE, ARENA_SIZE), (-1) ** i * MIN_Q))
+    for i in range(30):
+        given_points.append(Point(random.randrange(-ARENA_SIZE, ARENA_SIZE), random.randrange(-ARENA_SIZE, ARENA_SIZE),
+                                  (-1) ** i * MIN_Q))
     plot_points(given_points)
-
 
 if __name__ == '__main__':
     main()
