@@ -7,7 +7,7 @@ import random
 MIN_RADIUS = 0.1
 MIN_Q = 1
 ARENA_SIZE = 20.0
-STEP_ARENA = ARENA_SIZE / 30.0
+STEP_ARENA = ARENA_SIZE / 100.0
 
 
 class Point:
@@ -41,6 +41,7 @@ def go_E(points):
                 ans.append([i, j, E(points, i, j)])
     return ans
 
+
 def plot_points(points):
     print("go_E starting...")
     p = go_E(points)
@@ -62,7 +63,7 @@ def plot_points(points):
     print("showing...")
     for i in points:
         if i.q > 0:
-            plt.scatter(i.x, i.y, color='black', s=15)
+            plt.scatter(i.x, i.y, color='blue', s=15)
         else:
             plt.scatter(i.x, i.y, color='green', s=15)
 
@@ -74,12 +75,44 @@ def plot_points(points):
         print("E = ", E(points, plt.ginput(1, timeout=0)[0][0], plt.ginput(1, timeout=0)[0][1]), "V/m")
 
 
-def main():
+def generate_points(n=10):
     # random points
     given_points = []
-    for i in range(15):
+    for i in range(n):
         given_points.append(Point(random.randrange(-ARENA_SIZE, ARENA_SIZE), random.randrange(-ARENA_SIZE, ARENA_SIZE),
-                                  (-1) ** i * MIN_Q))
+                                  ((-1) ** random.random(2)) * MIN_Q))
+    return given_points
+
+
+# f(x) = ax + b
+def generate_line(a=1, b=0, start=-ARENA_SIZE, end=ARENA_SIZE):
+    # line
+    given_points = []
+    for i in np.arange(start, end, STEP_ARENA):
+        given_points.append(Point(i * a + b, i, MIN_Q))
+    return given_points
+
+
+def generate_circle(r=10, start=-ARENA_SIZE, end=ARENA_SIZE):
+    # circle
+    given_points = []
+    for i in np.arange(start, end, STEP_ARENA):
+        given_points.append(Point(r * math.cos(i), r * math.sin(i), MIN_Q))
+    return given_points
+
+
+# f(x) = ax**2 + bx + c
+def generate_parabola(a=1, b=0, c=0, start=-ARENA_SIZE, end=ARENA_SIZE):
+    # parabola
+    given_points = []
+    for i in np.arange(start, end, STEP_ARENA):
+        given_points.append(Point(i, a * i ** 2 + b * i + c, MIN_Q))
+    return given_points
+
+
+def main():
+    # example - two circles
+    given_points = generate_circle(10) + generate_circle(15)
     plot_points(given_points)
 
 
