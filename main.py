@@ -7,7 +7,7 @@ import random
 MIN_RADIUS = 0.1
 MIN_Q = 1
 ARENA_SIZE = 20.0
-STEP_ARENA = ARENA_SIZE / 300.0
+STEP_ARENA = ARENA_SIZE / 30.0
 
 
 class Point:
@@ -41,9 +41,7 @@ def go_E(points):
                 ans.append([i, j, E(points, i, j)])
     return ans
 
-
 def plot_points(points):
-
     print("go_E starting...")
     p = go_E(points)
 
@@ -68,16 +66,22 @@ def plot_points(points):
         else:
             plt.scatter(i.x, i.y, color='green', s=15)
 
-    plt.show()
+    plt.ion()
+    while True:
+        plt.show()
+        plt.pause(0.1)
+        # fast get and print mouse coordinates
+        print("E = ", E(points, plt.ginput(1, timeout=0)[0][0], plt.ginput(1, timeout=0)[0][1]), "V/m")
 
 
 def main():
     # random points
     given_points = []
-    for i in range(30):
+    for i in range(15):
         given_points.append(Point(random.randrange(-ARENA_SIZE, ARENA_SIZE), random.randrange(-ARENA_SIZE, ARENA_SIZE),
                                   (-1) ** i * MIN_Q))
     plot_points(given_points)
+
 
 if __name__ == '__main__':
     main()
